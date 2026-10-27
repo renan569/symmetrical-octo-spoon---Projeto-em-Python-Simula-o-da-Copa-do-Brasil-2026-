@@ -1,0 +1,163 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Campeonato de Futebol</title>
+
+    <link rel="stylesheet"
+          href="{{ url_for('static', filename='style.css') }}">
+    <script src="{{ url_for('static', filename='script.js') }}" defer></script>
+</head>
+<body>
+    <header class="topo">
+        <a href="{{ url_for('pagina') }}" class="logo">⚽ FUT<span>CHAVE</span></a>
+        <span class="status">● CAMPEONATO SIMULADO</span>
+    </header>
+
+    <main>
+        <section class="hero">
+            <p class="subtitulo">TEMPORADA 2026 · MODO SIMULAÇÃO</p>
+            <h1>O caminho até a <span>glória.</span></h1>
+            <p>Escolha os vencedores, avance pelas fases e conquiste a taça.</p>
+            <a href="#chaveamento" class="botao-principal">Ver chaveamento ↓</a>
+        </section>
+
+        {% if campeao %}
+        <section class="campeao">
+            <div class="trofeu">🏆</div>
+            <p>CAMPEÃO DO TORNEIO</p>
+            <h2>{{ campeao }}</h2>
+            <p class="mensagem">Parabéns! Seu time conquistou a taça!</p>
+            <div class="confetes">★ ✦ ★ ✦ ★</div>
+        </section>
+        {% endif %}
+
+        <section id="chaveamento" class="secao">
+            <div class="titulo-secao">
+                <div>
+                    <p class="subtitulo">FASE ELIMINATÓRIA</p>
+                    <h2>Chaveamento</h2>
+                </div>
+
+                <form action="{{ url_for('reiniciar') }}" method="POST"
+                      onsubmit="return confirm('Deseja reiniciar o campeonato?')">
+                    <button class="botao-reset" type="submit">↻ Reiniciar</button>
+                </form>
+            </div>
+
+            <div class="fases">
+                {% for fase in fases %}
+                <section class="fase">
+                    <div class="fase-titulo">
+                        <span class="numero-fase">0{{ loop.index }}</span>
+                        <h3>{{ fase.nome }}</h3>
+                    </div>
+
+                    {% if fase.jogos %}
+                        {% for jogo in fase.jogos %}
+                        <article class="partida">
+                            <div class="partida-cabecalho">
+                                <span>JOGO {{ loop.index }}</span>
+                                {% if jogo.vencedor %}
+                                    <span class="etiqueta">CLASSIFICADO</span>
+                                {% else %}
+                                    <span class="ao-vivo">SIMULAÇÃO</span>
+                                {% endif %}
+                            </div>
+
+                            {% for time in jogo.times %}
+                            <div class="time {% if jogo.vencedor == time %}vencedor{% endif %}">
+                                <span class="escudo">{{ time[0] }}</span>
+                                <span class="nome-time">{{ time }}</span>
+
+                                {% if jogo.vencedor == time %}
+                                    <span class="check">✓</span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+
+                            <div class="acoes-partida">
+                                <span class="instrucao">
+                                    {% if jogo.vencedor %}
+                                        Vencedor: {{ jogo.vencedor }}
+                                    {% else %}
+                                        Quem vence?
+                                    {% endif %}
+                                </span>
+
+                                <form action="{{ url_for('escolher') }}"
+                                      method="POST" class="escolhas">
+                                    <input type="hidden" name="jogo_id"
+                                           value="{{ jogo.id }}">
+
+                                    {% for time in jogo.times %}
+                                    <button
+                                        type="submit"
+                                        name="vencedor"
+                                        value="{{ time }}"
+                                        class="botao-time
+                                        {% if jogo.vencedor == time %}selecionado{% endif %}">
+                                        {{ time }}
+                                        {% if jogo.vencedor == time %} ✓{% endif %}
+                                    </button>
+                                    {% endfor %}
+                                </form>
+                            </div>
+                        </article>
+                        {% endfor %}
+                    {% else %}
+                        <div class="aguardando">
+                            <span class="icone-aguardando">🔒</span>
+                            <h4>Fase bloqueada</h4>
+                            <p>
+                                {% if fase.id == "semifinais" %}
+                                    Escolha os vencedores das quatro quartas
+                                    de final para liberar esta fase.
+                                {% else %}
+                                    Escolha os dois vencedores das semifinais
+                                    para liberar a grande final.
+                                {% endif %}
+                            </p>
+                        </div>
+                    {% endif %}
+                </section>
+                {% endfor %}
+            </div>
+        </section>
+
+        <section class="secao eliminados">
+            <div class="titulo-secao">
+                <div>
+                    <p class="subtitulo">FORA DA DISPUTA</p>
+                    <h2>Times eliminados</h2>
+                </div>
+            </div>
+
+            <div class="lista-eliminados">
+                {% for time in eliminados %}
+                <span class="tag-eliminado">{{ time }}</span>
+                {% endfor %}
+
+                {% for time in eliminados_jogos %}
+                <span class="tag-eliminado">{{ time }}</span>
+                {% endfor %}
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>⚽ FUTCHAVE · Projeto desenvolvido com Python e Flask</p>
+        <p>Campeonato fictício para fins de estudo e simulação.</p>
+    </footer>
+
+    <button id="ajuda" class="ajuda" type="button"
+            aria-label="Ajuda" title="Como jogar?">?</button>
+
+    <div id="aviso-ajuda" class="aviso-ajuda">
+        Escolha um time em cada duelo. Quando todos os jogos de uma fase
+        tiverem vencedores, a próxima fase será liberada automaticamente.
+    </div>
+</body>
+</html>
