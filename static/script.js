@@ -1,19 +1,3 @@
-
-const botaoAjuda = document.getElementById("ajuda");
-const avisoAjuda = document.getElementById("aviso-ajuda");
-
-botaoAjuda.addEventListener("click", function () {
-    avisoAjuda.classList.toggle("aberto");
-
-    if (avisoAjuda.classList.contains("aberto")) {
-        botaoAjuda.textContent = "×";
-        botaoAjuda.setAttribute("aria-label", "Fechar ajuda");
-    } else {
-        botaoAjuda.textContent = "?";
-        botaoAjuda.setAttribute("aria-label", "Abrir ajuda");
-    }
-});
-
 // Destaca visualmente a escolha feita antes de enviar ao Flask.
 document.querySelectorAll(".escolhas").forEach(function (formulario) {
     formulario.addEventListener("submit", function (evento) {
@@ -22,6 +6,10 @@ document.querySelectorAll(".escolhas").forEach(function (formulario) {
         if (!botao) return;
 
         botao.textContent = "Processando...";
-        botao.disabled = true;
+
+        // Desativa só depois que o navegador já leu os dados do formulário
+        setTimeout(function () {
+            botao.disabled = true;
+        }, 0);
     });
 });

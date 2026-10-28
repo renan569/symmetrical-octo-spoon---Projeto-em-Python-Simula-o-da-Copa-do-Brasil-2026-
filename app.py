@@ -1,10 +1,9 @@
 
+import os
 from flask import Flask, render_template, request, redirect, url_for, session
 
 app = Flask(__name__)
-
-# Use uma chave secreta em variável de ambiente no Render.
-app.secret_key = "troque-esta-chave-no-seu-projeto"
+app.secret_key = os.environ.get("SECRET_KEY", "chave-so-para-desenvolvimento")
 
 
 class Campeonato:
@@ -103,7 +102,6 @@ def escolher():
     jogo_id = request.form.get("jogo_id")
     vencedor = request.form.get("vencedor")
 
-    # Só permite escolher um time que esteja no duelo atual
     fases = montar_chave(resultados)
     jogo_encontrado = None
 
@@ -116,19 +114,15 @@ def escolher():
     if jogo_encontrado and vencedor in jogo_encontrado["times"]:
         resultados[jogo_id] = vencedor
 
-        # Se mudar as quartas, apaga semifinais e final
         if jogo_id.startswith("q"):
             for chave in ("s0", "s1", "f0"):
                 resultados.pop(chave, None)
-
-        # Se mudar uma semifinal, apaga a final
         elif jogo_id.startswith("s"):
             resultados.pop("f0", None)
 
-        session["resultados"] = resultados
+        session["resultados"] = resultados  # sem esta linha nada é salvo
 
     return redirect(url_for("pagina"))
-
 
 @app.route("/reiniciar", methods=["POST"])
 def reiniciar():
@@ -137,4 +131,4 @@ def reiniciar():
 
 
 if __name__ == "__main__":
-       app.run()
+    app.run()
